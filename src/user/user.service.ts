@@ -9,23 +9,38 @@ import { User, UserDocument } from './entities/user.entity';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>){}
   
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    const newUser = new this.userModel(createUserDto);
+    const saved = await newUser.save();
+    return "User created!";
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll() {
+    const users = await this.userModel.find().select('username');
+    return users;
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await this.userModel.findById({ _id: id }).select('username');
+    return user;
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    try {
+      const deleteUser = this.userModel.findByIdAndRemove({ _id: id });
+      if(deleteUser){
+        return `User ${id} is deleted.`;
+      }
+      return "User not deleted.";
+    } catch (error) {
+      return {
+        status: 505,
+        error: 'Something went wrong'
+      }
+    }
   }
 }
